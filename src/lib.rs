@@ -1,3 +1,8 @@
+pub mod config;
+pub mod routes;
+pub mod startup;
+
+
 use actix_web::{
 	web,
 	App,
@@ -6,16 +11,33 @@ use actix_web::{
 };
 
 use actix_web::dev::Server;
+use std::net::TcpListener;
+
+#[derive(serde::Deserialize)]
+pub struct FormData {
+	name: String,
+	email: String,
+}
+
+fn index(form: web::Form<FormData>) -> String {
+	format!("Welcome {}!", form.name)
+}
+
 async fn hc() -> HttpResponse {
 	HttpResponse::Ok().finish()
 }
 
-pub fn run() -> Result<Server,std::io::Error> {
+async fn subs(_form: web::Form<FormData>) -> HttpResponse {
+	HttpResponse::Ok().finish()
+}
+
+pub fn run(lis: TcpListener) -> Result<Server,std::io::Error> {
 	let s = HttpServer::new(|| {
 		App::new()
 			.route("/hc", web::get().to(hc))
+			.route("/subs", web::post().to(subs))
 	})
-	.bind("127.0.0.1:3000")?
+	.listen(lis)?
 	.run();
 
 	Ok(s)
