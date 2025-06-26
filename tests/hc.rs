@@ -1,8 +1,16 @@
+use sqlx::{PgConnection, Connection};
+use zero2prod::config::get_conf;
 use std::net::TcpListener;
 
 #[tokio::test]
 async fn test_200() {
 	let app = spawn_app();
+	let conf = get_conf().expect("Failed to read conf");
+	let conn_string = conf.db.conn_string();
+	let mut conn = PgConnection::connect(&conn_string)
+		.await
+		.expect("Failed to conn to Postgres");
+
 	let cli = reqwest::Client::new();
 
 	let body = "name=le%20guin&email=us";
@@ -15,6 +23,13 @@ async fn test_200() {
 		.expect("Failed to exe request");
 
 	assert_eq!(200, res.status().as_u16());
+	let saved = sqlx::query!("SELECT email, name FROM subs",)
+		.fetch_one(&mut conn)
+		.await
+		.expect("Failed to fetch saved subs");
+
+	assert_eq!(saved.email, "1");
+	assert_eq!(saved.name, "2");
 }
 
 #[tokio::test]

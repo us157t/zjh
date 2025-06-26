@@ -1,10 +1,11 @@
 use std::net::TcpListener;
-use zero2prod::run;
+use zero2prod::startup::run;
+use zero2prod::config::get_conf;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-	let lis = TcpListener::bind("127.0.0.1:0").expect("main bind tcp error");
-	let port = lis.local_addr().unwrap().port();
-	println!("Main port {}", port);
+	let conf = get_conf().expect("Failed to read conf");
+	let addr = format!("127.0.0.1:{}", conf.app_port);
+	let lis = TcpListener::bind(addr).expect("main bind tcp error");
 	run(lis)?.await
 }
