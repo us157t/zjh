@@ -24,6 +24,16 @@ impl DbSettings {
 			self.db_name
 		)
 	}
+
+	pub fn conn_string2(&self) -> String {
+		format!(
+			"postgres://{}:{}@{}:{}",
+			self.username,
+			self.password,
+			self.host,
+			self.port,
+		)
+	}
 }
 
 

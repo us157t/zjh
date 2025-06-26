@@ -6,12 +6,18 @@ use actix_web::{
 	web,
 	HttpServer,
 };
+use sqlx::PgConnection;
+use sqlx::PgPool;
 
-pub fn run(lis: TcpListener) -> Result<Server,std::io::Error> {
-        let s = HttpServer::new(|| {
+pub fn run(lis: TcpListener,
+	   conn: PgPool
+) -> Result<Server,std::io::Error> {
+	let conn = web::Data::new(conn);
+        let s = HttpServer::new(move || {
                 App::new()
                         .route("/hc", web::get().to(_hc))
                         .route("/subs", web::post().to(_subs))
+			.app_data(conn.clone())
         })
         .listen(lis)?
         .run();

@@ -11,10 +11,12 @@ syn = "1"
 
 [dependencies]
 actix-web = "4.11.0"
+chrono = "0.4.41"
 config = "0.11"
 reqwest = "0.12.20"
 serde = { version = "1.0.219", features = ["derive"] }
 tokio = { version = "1.45.1", features = ["full"] }
+uuid = { version = "0.8.1", features = ["v4"] }
 
 [dependencies.sqlx]
 version = "0.5.7"
