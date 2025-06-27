@@ -1,6 +1,7 @@
 use sqlx::{Executor,PgPool,PgConnection, Connection};
 use zero2prod::config::get_conf;
 use zero2prod::config::DbSettings;
+use zero2prod::startup::run;
 use std::net::TcpListener;
 use uuid::Uuid;
 
@@ -35,8 +36,8 @@ async fn test_200() {
 		.await
 		.expect("Failed to fetch saved subs");
 
-	assert_eq!(saved.email, "1");
-	assert_eq!(saved.name, "us");
+	assert_eq!(saved.email, "us");
+	assert_eq!(saved.name, "le guin");
 }
 
 #[tokio::test]
@@ -111,11 +112,11 @@ pub async fn conf_db(conf: &DbSettings) -> PgPool {
 async fn spawn_app()  -> TestApp {
 	let lis = TcpListener::bind("127.0.0.1:0").expect("spawn app listen error");
 	let port = lis.local_addr().unwrap().port();
-	let s = zero2prod::run(lis).expect("Failed to bind addr");
-	let _ = tokio::spawn(s);
 	let mut conf = get_conf().expect("Failed to read conf");
 	conf.db.db_name = Uuid::new_v4().to_string();
 	let db_pool = conf_db(&conf.db).await;
+	let s = run(lis, db_pool.clone()).expect("Failed to bind addr");
+	let _ = tokio::spawn(s);
 
 	TestApp {
 	address: format!("http://127.0.0.1:{}", port),

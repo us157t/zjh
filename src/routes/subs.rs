@@ -1,6 +1,5 @@
 use chrono::Utc;
 use uuid::Uuid;
-use sqlx::PgConnection;
 use sqlx::PgPool;
 use actix_web::{web,HttpResponse};
 
@@ -13,7 +12,7 @@ pub struct FormData {
 pub async fn _subs(_form: web::Form<FormData>,
 		   _conn: web::Data<PgPool>,
 ) -> HttpResponse{
-	sqlx::query!(
+	match sqlx::query!(
 		r#"
 		INSERT INTO subs (id, email, name, subs_at)
 		VALUES ($1, $2, $3, $4)
@@ -24,8 +23,13 @@ pub async fn _subs(_form: web::Form<FormData>,
 		Utc::now()
 	)
 	.execute(_conn.get_ref())
-	.await;
-	HttpResponse::Ok().finish()
+	.await {
+		Ok(_) => HttpResponse::Ok().finish(),
+		Err(e) => {
+			println!("Failed to exe query: {}", e);
+			HttpResponse::InternalServerError().finish()
+		}
+	}
 } 
 
 
