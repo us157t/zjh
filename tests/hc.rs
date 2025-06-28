@@ -8,7 +8,7 @@ use zero2prod::telemetry::{init_subs};
 use once_cell::sync::Lazy;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
-	init_subs("test".into(), "debug".into())
+	init_subs("test".into(), "debug".into(), std::io::sink)
 });
 
 pub struct TestApp {

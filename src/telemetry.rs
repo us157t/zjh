@@ -1,3 +1,4 @@
+use tracing_subscriber::fmt::MakeWriter;
 use sqlx::Connection;
 use sqlx::PgPool;
 use std::net::TcpListener;
@@ -17,14 +18,14 @@ use tracing_subscriber::{
 };
 
 use tracing::Subscriber;
-pub fn init_subs(name: String, ef: String) {
+pub fn init_subs<T:for<'a> MakeWriter<'a>  + Send + Sync + 'static,>(name: String, ef: String, sink: T) {
     LogTracer::init().expect("Failed to set logger");
     let ef = EnvFilter::try_from_default_env()
 	.unwrap_or_else(|_| EnvFilter::new(ef));
 
     let layer = BunyanFormattingLayer::new(
 	name,
-	std::io::stdout
+	sink
     );
     let subs = Registry::default()
 	.with(ef)

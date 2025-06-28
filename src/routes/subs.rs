@@ -10,42 +10,42 @@ pub struct FormData {
     name: String,
 }
 
+#[tracing::instrument(
+	name = "Adding a new subs",
+	skip(_form, _conn),
+	fields(
+		req_id = %Uuid::new_v4(),
+		email = %_form.email,
+		name = %_form.name
+	)
+)]
 pub async fn _subs(_form: web::Form<FormData>, _conn: web::Data<PgPool>) -> HttpResponse {
-    let req_id = Uuid::new_v4();
-    
-    let span = tracing::info_span!(
-	"Adding a new",
-	%req_id,
-	email = %_form.email,
-	name = %_form.name
-    );
+	match insert_subs(&_conn, &_form).await {
+		Ok(_) => HttpResponse::Ok().finish(),
+		Err(_) => HttpResponse::InternalServerError().finish()
+	}	
+}
 
-    tracing::info!("Saving new subs now!!!");
-    let _guard = span.enter();
-    let query_span = tracing::info_span!(
-"234Saving new subscriber details in the database"
-);
-    match sqlx::query!(
+#[tracing::instrument(
+	name = "INSERT SUBS",
+	skip(pool, form)
+)]
+pub async fn insert_subs(pool: &PgPool, form: &FormData) -> Result<(), sqlx::Error> {
+    sqlx::query!(
         r#"
 		INSERT INTO subs (id, email, name, subs_at)
 		VALUES ($1, $2, $3, $4)
 		"#,
         Uuid::new_v4(),
-        _form.email,
-        _form.name,
+        form.email,
+        form.name,
         Utc::now()
     )
-    .execute(_conn.get_ref())
-    .instrument(query_span)
+    .execute(pool)
     .await
-    {
-        Ok(_) => {
-            tracing::info!("New subscriber details have been saved");
-            HttpResponse::Ok().finish()
-        }
-        Err(e) => {
-            tracing::error!("Failed to exe query: {:?}", e);
-            HttpResponse::InternalServerError().finish()
-        }
-    }
+    .map_err(|e| {
+	tracing::error!("Failed to exe query: {:?}", e);
+	e
+    })?;
+    Ok(())
 }

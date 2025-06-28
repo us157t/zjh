@@ -8,7 +8,7 @@ use zero2prod::telemetry::init_subs;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    init_subs("zero2prod".into(), "info".into());
+    init_subs("zero2prod".into(), "info".into(), std::io::stdout);
     let mut conf = get_conf().expect("Failed to read conf");
     //	conf.db.db_name = Uuid::new_v4().to_string();
     let conn = PgPool::connect(&conf.db.conn_string())
