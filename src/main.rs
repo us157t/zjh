@@ -1,15 +1,14 @@
-use env_logger::Env;
 use sqlx::Connection;
 use sqlx::PgPool;
 use std::net::TcpListener;
 use uuid::Uuid;
 use zero2prod::config::get_conf;
 use zero2prod::startup::run;
+use zero2prod::telemetry::init_subs;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-
+    init_subs("zero2prod".into(), "info".into());
     let mut conf = get_conf().expect("Failed to read conf");
     //	conf.db.db_name = Uuid::new_v4().to_string();
     let conn = PgPool::connect(&conf.db.conn_string())

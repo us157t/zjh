@@ -4,6 +4,12 @@ use uuid::Uuid;
 use zero2prod::config::get_conf;
 use zero2prod::config::DbSettings;
 use zero2prod::startup::run;
+use zero2prod::telemetry::{init_subs};
+use once_cell::sync::Lazy;
+
+static TRACING: Lazy<()> = Lazy::new(|| {
+	init_subs("test".into(), "debug".into())
+});
 
 pub struct TestApp {
     pub address: String,
@@ -110,6 +116,7 @@ pub async fn conf_db(conf: &DbSettings) -> PgPool {
 }
 
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
     let lis = TcpListener::bind("127.0.0.1:0").expect("spawn app listen error");
     let port = lis.local_addr().unwrap().port();
     let mut conf = get_conf().expect("Failed to read conf");
