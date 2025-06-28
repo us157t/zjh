@@ -1,3 +1,4 @@
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
@@ -20,8 +21,7 @@ pub struct TestApp {
 async fn test_200() {
     let app = spawn_app().await;
     let conf = get_conf().expect("Failed to read conf");
-    let conn_string = conf.db.conn_string();
-    let mut conn = PgConnection::connect(&conn_string)
+    let mut conn = PgConnection::connect(&conf.db.conn_string().expose_secret())
         .await
         .expect("Failed to conn to Postgres");
 
@@ -89,7 +89,7 @@ async fn dum_test() {
 }
 
 pub async fn conf_db(conf: &DbSettings) -> PgPool {
-    let mut conn = PgPool::connect(&conf.conn_string2())
+    let mut conn = PgPool::connect(&conf.conn_string2().expose_secret())
         .await
         .expect("Failed to conn to postgres");
     conn.execute(
@@ -103,7 +103,7 @@ pub async fn conf_db(conf: &DbSettings) -> PgPool {
     .await
     .expect("Failed to create db");
 
-    let conn_pool = PgPool::connect(&conf.conn_string())
+    let conn_pool = PgPool::connect(&conf.conn_string().expose_secret())
         .await
         .expect("Failed to conn a postgres");
 
