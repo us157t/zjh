@@ -1,3 +1,4 @@
+use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
@@ -5,12 +6,9 @@ use uuid::Uuid;
 use zero2prod::config::get_conf;
 use zero2prod::config::DbSettings;
 use zero2prod::startup::run;
-use zero2prod::telemetry::{init_subs};
-use once_cell::sync::Lazy;
+use zero2prod::telemetry::init_subs;
 
-static TRACING: Lazy<()> = Lazy::new(|| {
-	init_subs("test".into(), "debug".into(), std::io::sink)
-});
+static TRACING: Lazy<()> = Lazy::new(|| init_subs("test".into(), "debug".into(), std::io::sink));
 
 pub struct TestApp {
     pub address: String,

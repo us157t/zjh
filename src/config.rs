@@ -20,14 +20,21 @@ impl DbSettings {
     pub fn conn_string(&self) -> Secret<String> {
         Secret::new(format!(
             "postgres://{}:{}@{}:{}/{}",
-            self.username, self.password.expose_secret(), self.host, self.port, self.db_name
+            self.username,
+            self.password.expose_secret(),
+            self.host,
+            self.port,
+            self.db_name
         ))
     }
 
     pub fn conn_string2(&self) -> Secret<String> {
         Secret::new(format!(
             "postgres://{}:{}@{}:{}",
-            self.username, self.password.expose_secret(), self.host, self.port,
+            self.username,
+            self.password.expose_secret(),
+            self.host,
+            self.port,
         ))
     }
 }
