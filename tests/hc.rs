@@ -15,6 +15,12 @@ pub struct TestApp {
     pub db_pool: PgPool,
 }
 
+#[test]
+fn dummy_fail() {
+let result: Result<&str, &str> = Err("The app crashed due to an IO error");
+claim::assert_ok!(result);
+}
+
 #[tokio::test]
 async fn test_200() {
     let app = spawn_app().await;

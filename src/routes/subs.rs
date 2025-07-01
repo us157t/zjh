@@ -21,9 +21,13 @@ pub struct FormData {
 	)
 )]
 pub async fn _subs(_form: web::Form<FormData>, _conn: web::Data<PgPool>) -> HttpResponse {
+    let name = match SubsName::parse(_form.0.name) {
+	Ok(name) => name,
+	Err(_) => return HttpResponse::BadRequest().finish(),
+    };
     let new_subs = NewSubs {
 	email: _form.0.email,
-	name: SubsName::parse(_form.0.name),
+	name,
     };
 
     match insert_subs(&_conn, &new_subs).await {
