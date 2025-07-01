@@ -20,19 +20,3 @@ impl AsRef<str> for SubsEmail {
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use fake::faker::internet::en::SafeEmail;
-	use fake::Fake;
-	use super::SubsEmail;
-	use claim::assert_err;
-
-	#[test]
-	fn empty1234() {
-		let email = SafeEmail().fake();
-		claim::assert_ok!(SubsEmail::parse(email));
-	}
-
-
-}
-

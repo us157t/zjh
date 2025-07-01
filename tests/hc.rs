@@ -31,7 +31,7 @@ async fn test_200() {
 
     let cli = reqwest::Client::new();
 
-    let body = "name=le%20guin&email=us";
+    let body = "name=le%20guin&email=us@qq.com";
     let res = cli
         .post(&format!("{}/subs", &app.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -46,7 +46,7 @@ async fn test_200() {
         .await
         .expect("Failed to fetch saved subs");
 
-    assert_eq!(saved.email, "us");
+    assert_eq!(saved.email, "us@qq.com");
     assert_eq!(saved.name, "le guin");
 }
 

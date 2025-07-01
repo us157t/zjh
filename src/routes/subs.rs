@@ -4,12 +4,23 @@ use sqlx::PgPool;
 use tracing::Instrument;
 use unicode_segmentation::UnicodeSegmentation;
 use uuid::Uuid;
-use crate::domain::{NewSubs, SubsName};
+use crate::domain::{NewSubs, SubsName, SubsEmail};
 
 #[derive(serde::Deserialize)]
 pub struct FormData {
     email: String,
     name: String,
+}
+
+
+impl TryFrom<FormData> for NewSubs {
+	type Error = String;
+	
+	fn try_from(v: FormData) -> Result<Self, Self::Error> {
+		let name = SubsName::parse(v.name)?;
+		let email = SubsEmail::parse(v.email)?;
+		Ok(Self { email, name })
+	}
 }
 
 #[tracing::instrument(
@@ -20,14 +31,11 @@ pub struct FormData {
 		name = %_form.name
 	)
 )]
+
 pub async fn _subs(_form: web::Form<FormData>, _conn: web::Data<PgPool>) -> HttpResponse {
-    let name = match SubsName::parse(_form.0.name) {
-	Ok(name) => name,
+    let new_subs = match _form.0.try_into() {
+	Ok(s) => s,
 	Err(_) => return HttpResponse::BadRequest().finish(),
-    };
-    let new_subs = NewSubs {
-	email: _form.0.email,
-	name,
     };
 
     match insert_subs(&_conn, &new_subs).await {
@@ -44,7 +52,7 @@ pub async fn insert_subs(pool: &PgPool, form: &NewSubs) -> Result<(), sqlx::Erro
 		VALUES ($1, $2, $3, $4)
 		"#,
         Uuid::new_v4(),
-        form.email,
+        form.email.as_ref(),
         form.name.as_ref(),
         Utc::now()
     )
