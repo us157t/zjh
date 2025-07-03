@@ -17,11 +17,10 @@ impl SubsName {
 }
 
 impl AsRef<str> for SubsName {
-	fn as_ref(&self) -> &str {
-		&self.0
-	}
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
 }
-
 
 pub struct NewSubs {
     pub email: String,

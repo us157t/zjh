@@ -1,10 +1,10 @@
+use crate::domain::{NewSubs, SubsEmail, SubsName};
 use actix_web::{web, HttpResponse};
 use chrono::Utc;
 use sqlx::PgPool;
 use tracing::Instrument;
 use unicode_segmentation::UnicodeSegmentation;
 use uuid::Uuid;
-use crate::domain::{NewSubs, SubsName, SubsEmail};
 
 #[derive(serde::Deserialize)]
 pub struct FormData {
@@ -12,15 +12,14 @@ pub struct FormData {
     name: String,
 }
 
-
 impl TryFrom<FormData> for NewSubs {
-	type Error = String;
-	
-	fn try_from(v: FormData) -> Result<Self, Self::Error> {
-		let name = SubsName::parse(v.name)?;
-		let email = SubsEmail::parse(v.email)?;
-		Ok(Self { email, name })
-	}
+    type Error = String;
+
+    fn try_from(v: FormData) -> Result<Self, Self::Error> {
+        let name = SubsName::parse(v.name)?;
+        let email = SubsEmail::parse(v.email)?;
+        Ok(Self { email, name })
+    }
 }
 
 #[tracing::instrument(
@@ -34,8 +33,8 @@ impl TryFrom<FormData> for NewSubs {
 
 pub async fn _subs(_form: web::Form<FormData>, _conn: web::Data<PgPool>) -> HttpResponse {
     let new_subs = match _form.0.try_into() {
-	Ok(s) => s,
-	Err(_) => return HttpResponse::BadRequest().finish(),
+        Ok(s) => s,
+        Err(_) => return HttpResponse::BadRequest().finish(),
     };
 
     match insert_subs(&_conn, &new_subs).await {

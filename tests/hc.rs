@@ -5,6 +5,7 @@ use std::net::TcpListener;
 use uuid::Uuid;
 use zero2prod::config::get_conf;
 use zero2prod::config::DbSettings;
+use zero2prod::email_client::EmailCli;
 use zero2prod::startup::run;
 use zero2prod::telemetry::init_subs;
 
@@ -17,8 +18,8 @@ pub struct TestApp {
 
 #[test]
 fn dummy_fail() {
-let result: Result<&str, &str> = Err("The app crashed due to an IO error");
-claim::assert_ok!(result);
+    let result: Result<&str, &str> = Err("The app crashed due to an IO error");
+    claim::assert_ok!(result);
 }
 
 #[tokio::test]
@@ -124,9 +125,13 @@ async fn spawn_app() -> TestApp {
     let lis = TcpListener::bind("127.0.0.1:0").expect("spawn app listen error");
     let port = lis.local_addr().unwrap().port();
     let mut conf = get_conf().expect("Failed to read conf");
+    dbg!("!@@!!!!!!!");
     conf.db.db_name = Uuid::new_v4().to_string();
     let db_pool = conf_db(&conf.db).await;
-    let s = run(lis, db_pool.clone()).expect("Failed to bind addr");
+    let sender_email = conf.email_cli.sender().expect("Invalid sender email addr");
+    let email_cli = EmailCli::new(conf.email_cli.base_url, sender_email);
+
+    let s = run(lis, db_pool.clone(), email_cli).expect("Failed to bind addr");
     let _ = tokio::spawn(s);
 
     TestApp {

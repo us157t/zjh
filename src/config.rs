@@ -1,10 +1,24 @@
+use crate::domain::SubsEmail;
 use secrecy::ExposeSecret;
 use secrecy::Secret;
+
+#[derive(serde::Deserialize)]
+pub struct EmailCliSettings {
+    pub base_url: String,
+    pub sender_email: String,
+}
+
+impl EmailCliSettings {
+    pub fn sender(&self) -> Result<SubsEmail, String> {
+        SubsEmail::parse(self.sender_email.clone())
+    }
+}
 
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub db: DbSettings,
     pub app_port: u16,
+    pub email_cli: EmailCliSettings,
 }
 
 #[derive(serde::Deserialize)]
